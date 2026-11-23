@@ -4,15 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>استوديو المحتوى — أرض الأجداد</title>
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
 </head>
 <body style="font-family:system-ui,sans-serif;text-align:center;padding-top:80px;color:#7a4a22;background:#f7f3ec">
 جاري التحميل...
 <script>
-var APP_API = 'https://script.google.com/macros/s/AKfycbzx1UGy4mn6k6xzwyTjaQbuJuntI0-zMcgLVWnWnKTPgyekMNDnGpNbXKypYZMeFC8efA/exec';
-fetch(APP_API, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({action: 'app'})})
-  .then(function (r) { return r.text(); })
-  .then(function (h) { document.open(); document.write(h); document.close(); })
-  .catch(function () { document.body.textContent = 'حصلت مشكلة في التحميل، حدّث الصفحة'; });
+(function () {
+  var API = 'https://script.google.com/macros/s/AKfycbzx1UGy4mn6k6xzwyTjaQbuJuntI0-zMcgLVWnWnKTPgyekMNDnGpNbXKypYZMeFC8efA/exec';
+  var KEY = 'ajd_app_html';
+  var cached = null;
+  try { cached = localStorage.getItem(KEY); } catch (e) {}
+  function show(h) { document.open(); document.write(h); document.close(); }
+  var fresh = fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'app' }) })
+    .then(function (r) { return r.text(); });
+  if (cached) {
+    // افتح النسخة المحفوظة على طول، وحدّثها في الخلفية للمرة الجاية
+    show(cached);
+    fresh.then(function (h) {
+      if (h && h.length > 5000 && h !== cached) { try { localStorage.setItem(KEY, h); } catch (e) {} }
+    }).catch(function () {});
+  } else {
+    fresh.then(function (h) {
+      if (h && h.length > 5000) { try { localStorage.setItem(KEY, h); } catch (e) {} }
+      show(h);
+    }).catch(function () { document.body.textContent = 'حصلت مشكلة في التحميل، حدّث الصفحة'; });
+  }
+})();
 </script>
 </body>
 </html>
