@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>استوديو المحتوى — أرض الأجداد</title>
+</head>
+<body style="font-family:system-ui,sans-serif;text-align:center;padding-top:80px;color:#7a4a22;background:#f7f3ec">
+جاري التحميل...
+<script>
+var APP_API = 'https://script.google.com/macros/s/AKfycbzx1UGy4mn6k6xzwyTjaQbuJuntI0-zMcgLVWnWnKTPgyekMNDnGpNbXKypYZMeFC8efA/exec';
+fetch(APP_API, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({action: 'app'})})
+  .then(function (r) { return r.text(); })
+  .then(function (h) { document.open(); document.write(h); document.close(); })
+  .catch(function () { document.body.textContent = 'حصلت مشكلة في التحميل، حدّث الصفحة'; });
+</script>
+</body>
+</html>
