@@ -15,7 +15,10 @@
   var KEY = 'ajd_app_html';
   var cached = null;
   try { cached = localStorage.getItem(KEY); } catch (e) {}
-  function show(h) { document.open(); document.write(h); document.close(); }
+  function show(h) {
+    var go = function () { document.open(); document.write(h); document.close(); };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+  }
   var fresh = fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'app' }) })
     .then(function (r) { return r.text(); });
   if (cached) {
