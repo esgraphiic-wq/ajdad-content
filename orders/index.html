@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>لوحة الطلبات — أرض الأجداد</title>
+<meta name="theme-color" content="#5a3d22">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="طلبات الأجداد">
+<link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://script.google.com">
 <link rel="preconnect" href="https://script.googleusercontent.com">
 </head>
@@ -15,7 +22,10 @@
   var KEY = 'ajd_orders_app_html';
   var cached = null;
   try { cached = localStorage.getItem(KEY); } catch (e) {}
+  var HEAD = '<title>لوحة الطلبات — أرض الأجداد</title><meta name="theme-color" content="#5a3d22"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="طلبات الأجداد"><link rel="icon" href="icon-192.png">';
+  if ('serviceWorker' in navigator) { try { navigator.serviceWorker.register('sw.js'); } catch (e) {} }
   function show(h) {
+    h = h.replace(/<head>/i, '<head>' + HEAD);
     var go = function () { document.open(); document.write(h); document.close(); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
   }
