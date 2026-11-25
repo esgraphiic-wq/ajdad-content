@@ -34,7 +34,7 @@
   if (cached) {
     show(cached);
     fresh.then(function (h) {
-      if (h && h.length > 5000 && h !== cached) { try { localStorage.setItem(KEY, h); } catch (e) {} }
+      if (h && h.length > 5000 && h !== cached) { try { localStorage.setItem(KEY, h); } catch (e) {} show(h); }
     }).catch(function () {});
   } else {
     fresh.then(function (h) {
