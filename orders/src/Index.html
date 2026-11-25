@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1e7; --card:#fffdf8; --ink:#2b2118; --muted:#857563; --line:#e6dccb;
+  --brand:#5a3d22; --gold:#b8873b; --gold-soft:#f3e6c8;
+  --ok:#2f7a4b; --ok-soft:#e3f2e8; --warn:#a8641a; --warn-soft:#fbecd7; --bad:#a33a2a; --bad-soft:#f8e1dc;
+  --blue:#2d5f8a; --blue-soft:#e2edf6;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tajawal,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+/* login */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:32px;width:100%;max-width:380px;box-shadow:0 10px 40px rgba(90,61,34,.08)}
+.logo{font-weight:800;font-size:22px;color:var(--brand)}
+.logo small{display:block;font-weight:500;font-size:13px;color:var(--muted);margin-top:4px}
+input,select,textarea{width:100%;font-family:inherit;font-size:15px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);margin-top:6px}
+label{font-size:13px;color:var(--muted);display:block;margin-top:14px}
+.btn{border:0;border-radius:10px;padding:11px 18px;font-weight:700;font-size:15px;background:var(--brand);color:#fff}
+.btn.gold{background:var(--gold)}
+.btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--line)}
+.btn.ok{background:var(--ok)}
+.btn.sm{padding:6px 12px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:default}
+.err{color:var(--bad);font-size:13px;margin-top:10px;min-height:18px}
+/* shell */
+header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px}
+header .logo{color:#fff;font-size:18px}
+header .logo{white-space:nowrap}
+header .logo small{color:var(--gold-soft);display:inline;margin:0 8px}
+header .sp{flex:1}
+header .who{font-size:13px;color:var(--gold-soft)}
+header button{background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 10px;font-size:13px}
+nav{display:flex;gap:4px;padding:10px 20px 0;overflow-x:auto;border-bottom:1px solid var(--line);background:var(--card)}
+nav button{background:none;border:0;padding:10px 14px;font-size:15px;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap}
+nav button.on{color:var(--brand);border-bottom-color:var(--gold);font-weight:700}
+main{padding:20px;max-width:1280px;margin:0 auto}
+h2{font-size:18px;margin:24px 0 12px}
+h2:first-child{margin-top:0}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.stat .n{font-size:30px;font-weight:800;line-height:1.1}
+.stat .l{color:var(--muted);font-size:13px;margin-top:4px}
+.stat.warn .n{color:var(--warn)} .stat.bad .n{color:var(--bad)} .stat.ok .n{color:var(--ok)} .stat.blue .n{color:var(--blue)}
+.issue{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#fff9ec,#fffdf8);border:1px solid #ead7ad}
+.issue .line{font-size:17px;font-weight:700}
+.issue .sub{color:var(--muted);font-size:13px;margin-top:4px}
+.issue .acts{display:flex;gap:8px;flex-wrap:wrap}
+.msg{background:var(--blue-soft);border:1px solid #c9dcec;color:#1e4566;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:14px;white-space:pre-wrap}
+/* board */
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:12px;overflow-x:auto;padding-bottom:8px}
+.col{background:#efe7d8;border-radius:14px;padding:10px;min-height:120px}
+.col h3{margin:2px 4px 10px;font-size:14px;display:flex;justify-content:space-between}
+.col h3 span{background:#fff;border-radius:20px;padding:0 8px;font-size:12px;color:var(--muted)}
+.oc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px}
+.oc .t{display:flex;justify-content:space-between;font-weight:700;font-size:14px}
+.oc .m{color:var(--muted);margin-top:4px;line-height:1.6}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:20px;background:var(--gold-soft);color:var(--brand);margin-left:4px;font-weight:700}
+.tag.amz{background:#232f3e;color:#ff9900}
+.tag.gift{background:#f6e1ef;color:#8a2c6a}
+.tag.bank{background:var(--blue-soft);color:var(--blue)}
+.tag.cod{background:var(--warn-soft);color:var(--warn)}
+.oc .a{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.oc .a .btn:not(.sm){flex:1}
+.oc .sub2{font-size:12px;color:var(--muted);margin-top:2px}
+.oc .who2{margin-top:6px;font-weight:700;color:var(--ink)}
+.oc .amt{font-size:18px;font-weight:800;color:var(--brand);margin-top:4px}
+.oc .items{margin:6px 0 0;padding:0 18px 0 0;line-height:1.7}
+.oc .kvs{margin-top:6px;display:grid;gap:2px}
+.oc .kv{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--muted)}
+.oc .kv b{color:var(--ink);font-weight:500;text-align:left;direction:ltr;unicode-bidi:plaintext}
+.oc .note{margin-top:6px;background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:6px 8px;font-size:12.5px}
+.cards{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.cards .oc{margin:0}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filters input,.filters select{width:auto;margin:0;min-width:160px}
+/* tables */
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#f1e9da;font-size:13px;color:var(--muted);font-weight:700}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.p-new{background:var(--warn-soft);color:var(--warn)} .p-run{background:var(--blue-soft);color:var(--blue)}
+.p-done{background:var(--ok-soft);color:var(--ok)} .p-x{background:#eee;color:#777} .p-bad{background:var(--bad-soft);color:var(--bad)}
+/* days */
+.day{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.day .d{font-weight:800;font-size:16px}
+.files{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.file{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--brand);background:var(--gold-soft);border-radius:10px;padding:8px 12px;font-weight:700;font-size:14px}
+.file.off{opacity:.4;pointer-events:none}
+.file.ready::before{content:'↗';font-weight:800}
+.file .hint{font-weight:500;font-size:11px;color:var(--muted)}
+.guide-sec{margin-bottom:16px}
+.guide-sec h3{margin:0 0 8px;font-size:15px;color:var(--brand)}
+.guide-sec li{margin-bottom:6px;line-height:1.7}
+.empty{color:var(--muted);text-align:center;padding:24px;font-size:14px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;z-index:20}
+dialog{border:0;border-radius:16px;padding:24px;max-width:420px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(43,33,24,.4)}
+.row{display:flex;gap:8px;justify-content:flex-start;margin-top:16px}
+.loading{padding:60px;text-align:center;color:var(--muted)}
+@media(max-width:640px){main{padding:12px}.grid{grid-template-columns:1fr 1fr;gap:8px}.card{padding:12px}.stat .n{font-size:22px}.board{grid-auto-flow:row;grid-auto-columns:auto}.col{min-height:0}.emptycol{display:none}.cards{grid-template-columns:1fr}.issue{flex-direction:column;align-items:stretch}.issue .acts .btn{flex:1}.day{grid-template-columns:1fr}.filters input,.filters select{flex:1;min-width:0}table{display:block;overflow-x:auto;white-space:nowrap}h2{font-size:16px}header{padding:10px 12px;gap:8px}header .who,header .logo small{display:none}header button{padding:5px 8px;font-size:12px}nav{padding:6px 10px 0}}
+</style>
+</head>
+<body>
+
+<section id="login">
+  <div class="login-box">
+    <div class="logo">لوحة الطلبات<small>أرض الأجداد</small></div>
+    <label>الإيميل</label><input id="em" type="email" autocomplete="username">
+    <label>كلمة السر</label><input id="pw" type="password" autocomplete="current-password">
+    <div class="err" id="lerr"></div>
+    <button class="btn" style="width:100%;margin-top:8px" id="lbtn" onclick="doLogin()">دخول</button>
+  </div>
+</section>
+
+<section id="app" class="hidden">
+  <header>
+    <div class="logo">لوحة الطلبات<small>أرض الأجداد</small></div>
+    <div class="sp"></div>
+    <div class="who" id="who"></div>
+    <button onclick="refresh()">تحديث</button>
+    <button onclick="openPw()">كلمة السر</button>
+    <button onclick="logout()">خروج</button>
+  </header>
+  <nav id="nav"></nav>
+  <main id="main"><div class="loading">بحمّل...</div></main>
+</section>
+
+<dialog id="dlg"><div id="dlgBody"></div></dialog>
+
+<script>
+var S = { token: null, data: null, tab: null, q: '', src: '' };
+var MANAGER_TABS = [['home','الرئيسية'],['board','الطلبات'],['amz','أمازون'],['days','ملفات الأيام'],['cmds','الأوامر'],['guide','الدليل'],['log','السجل']];
+var PREP_TABS = [['prep','ملفات اليوم'],['days','الأيام اللي فاتت']];
+
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function toast(t){var d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.remove()},2600)}
+function day(v){if(!v)return '';var d=new Date(v);if(isNaN(d))return String(v).slice(0,10);return d.toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'})}
+function dt(v){if(!v)return '';var d=new Date(v);if(isNaN(d))return esc(v);return d.toLocaleString('ar-EG',{timeZone:'Africa/Cairo',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}
+function dayName(v){var d=new Date(day(v)+'T12:00:00');if(isNaN(d))return '';return d.toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long'})}
+function money(v){var n=parseFloat(v);return isNaN(n)?(v||'—'):n.toLocaleString('en-US',{maximumFractionDigits:2})+' ر.س'}
+
+var API='https://script.google.com/macros/s/AKfycbzycQqfDITM0a4KSDHiHuP2ryKC9CvN80_K37oLAg5dTJHbxcgV74iccVng8dMOHS5m/exec';
+function call(fn){var args=[].slice.call(arguments,1);
+  return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:fn,args:args})})
+    .then(function(r){return r.json()})
+    .then(function(j){if(j.ok)return j.result;var e=new Error(j.error);if(String(j.error).indexOf('SESSION_EXPIRED')>=0)logout(true);throw e})}
+
+function doLogin(){
+  $('lerr').textContent='';$('lbtn').disabled=true;
+  call('login',$('em').value,$('pw').value).then(function(r){
+    $('lbtn').disabled=false;
+    if(!r.ok){$('lerr').textContent=r.msg;return}
+    S.token=r.token;try{localStorage.setItem('ob_t',r.token)}catch(e){}
+    start(r.user);
+  }).catch(function(e){$('lbtn').disabled=false;$('lerr').textContent='حصلت مشكلة: '+(e.message||e)})
+}
+$('pw').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
+
+function logout(expired){S.token=null;try{localStorage.removeItem('ob_t')}catch(e){}
+  $('app').classList.add('hidden');$('login').classList.remove('hidden');if(expired)$('lerr').textContent='الجلسة خلصت، ادخل تاني'}
+
+function start(u){
+  $('login').classList.add('hidden');$('app').classList.remove('hidden');
+  var tabs=u.role==='مدير'?MANAGER_TABS:PREP_TABS;
+  S.tab=S.tab||tabs[0][0];
+  $('nav').innerHTML=tabs.map(function(t){return '<button data-t="'+t[0]+'" onclick="go(\''+t[0]+'\')">'+t[1]+'</button>'}).join('');
+  refresh();
+}
+function go(t){S.tab=t;render()}
+function refresh(){
+  call('getData',S.token).then(function(d){S.data=d;$('who').textContent=d.user.name+' · '+d.user.role;render()})
+    .catch(function(e){if(S.token)$('main').innerHTML='<div class="empty">مقدرتش أحمّل: '+esc(e.message||e)+'</div>'})
+}
+setInterval(function(){if(S.token&&!document.hidden&&!$('dlg').open)refresh()},60000);
+
+function render(){
+  [].forEach.call(document.querySelectorAll('nav button'),function(b){b.classList.toggle('on',b.dataset.t===S.tab)});
+  var f={home:vHome,board:vBoard,amz:vAmz,days:vDays,cmds:vCmds,guide:vGuide,log:vLog,prep:vPrep}[S.tab];
+  $('main').innerHTML=f?f():'';
+  setTimeout(prefetch,300);
+}
+
+/* ---------- helpers for orders ---------- */
+function tags(o){var t='';var src=String(o['المصدر']||'');var typ=String(o['النوع']||'');
+  if(src.indexOf('أمازون')>=0)t+='<span class="tag amz">أمازون</span>';
+  if(typ.indexOf('إهداء')>=0)t+='<span class="tag gift">إهداء</span>';
+  if(typ.indexOf('تحويل')>=0)t+='<span class="tag bank">تحويل</span>';
+  if(typ.indexOf('استلام')>=0&&typ.indexOf('فرع')<0)t+='<span class="tag cod">عند الاستلام</span>';
+  if(typ.indexOf('فرع')>=0)t+='<span class="tag">فرع</span>';
+  return t}
+function count(st){return (S.data.orders||[]).filter(function(o){return o['المرحلة']===st}).length}
+function st(k){var s=S.data.state[k];return s?s.v:''}
+function stT(k){var s=S.data.state[k];return s?s.t:''}
+
+/* ---------- manager: home ---------- */
+function vHome(){
+  var d=S.data;var pend=(d.cmds||[]).filter(function(c){return c['الحالة']==='جديد'||c['الحالة']==='جاري'});
+  var line=st('سطر الإصدار المنتظر');var issueState=st('حالة الإصدار');
+  var html='';
+  var cm=st('رسالة من Claude');if(cm)html+='<div class="msg"><b>من Claude:</b> '+esc(cm)+'<div style="font-size:11px;opacity:.7;margin-top:4px">'+dt(stT('رسالة من Claude'))+'</div></div>';
+  html+='<div class="card issue"><div><div class="line">'+(line?esc(line):'مفيش إصدار مستني دلوقتي')+'</div>'+
+    '<div class="sub">حالة الإصدار: '+esc(issueState||'—')+(pend.length?' · فيه '+pend.length+' أمر مستني التنفيذ':'')+'</div></div>'+
+    '<div class="acts"><button class="btn gold" '+(line?'':'disabled')+' onclick="cmd(\'أصدر\',\'\')">أصدر</button>'+
+    '<button class="btn ghost" onclick="exceptional()">إصدار استثنائي</button>'+
+    '<button class="btn ghost" onclick="note()">ملاحظة لـ Claude</button></div></div>';
+  html+='<h2>الطلبات دلوقتي</h2><div class="grid">'+
+    stat(count('بانتظار الإصدار'),'بانتظار الإصدار','gold')+
+    stat(count('بانتظار تأكيد التحويل'),'تحويل بنكي مستني تأكيد','blue')+
+    stat(count('دفع عند الاستلام'),'دفع عند الاستلام','warn')+
+    stat(count('اتصدرت'),'اتصدرت ومستنية تجهيز','')+
+    stat(count('اتجهزت'),'اتجهزت','ok')+
+    stat(count('استلام من الفرع'),'استلام من الفرع','')+
+    stat((d.orders||[]).filter(function(o){return isAmz(o)&&o['المرحلة']==='بانتظار الإصدار'}).length,'أمازون مستنية شحن','gold')+'</div>';
+  html+='<h2>الأرصدة</h2><div class="grid">'+
+    stat(money(st('رصيد محفظة الشحن')),'محفظة الشحن · '+dt(stT('رصيد محفظة الشحن')),'')+
+    stat(money(st('رصيد المدفوعات')),'المدفوعات · '+dt(stT('رصيد المدفوعات')),'')+
+    '<div class="card stat"><div class="n" style="font-size:18px">'+(dt(st('آخر تشغيل لـ Claude'))||'—')+'</div><div class="l">آخر مرة Claude اشتغل</div></div>'+'</div>';
+  var transfers=(d.orders||[]).filter(function(o){return o['المرحلة']==='بانتظار تأكيد التحويل'});
+  if(transfers.length){html+='<h2>تحويلات مستنية تأكيد أبو فهد</h2><div class="cards">'+transfers.map(orderCard).join('')+'</div>'}
+  var waiting=(d.orders||[]).filter(function(o){return o['المرحلة']==='بانتظار الإصدار'});
+  if(waiting.length){var tot=waiting.reduce(function(s,o){return s+(parseFloat(o['المبلغ'])||0)},0);
+    html+='<h2>مستنية الإصدار ('+waiting.length+') <small style="font-weight:500;color:var(--muted)">· إجمالي '+money(tot)+'</small></h2><div class="cards">'+waiting.map(orderCard).join('')+'</div>'}
+  var today=(d.days||[]).slice(0,4);
+  html+='<h2>آخر ملفات</h2>'+(today.length?today.map(dayCard).join(''):'<div class="empty">لسه مفيش ملفات</div>');
+  return html;
+}
+function stat(n,l,c){return '<div class="card stat '+(c||'')+'"><div class="n">'+esc(n)+'</div><div class="l">'+esc(l)+'</div></div>'}
+
+function cmd(type,details){
+  var txt={'أصدر':'هتبعت أمر الإصدار. Claude هيصدر البوليصات اللي في السطر.','اتأكد التحويل':'هتأكد إن تحويل الطلب '+details+' وصل، وClaude هيصدره.'}[type]||'تأكيد الأمر؟';
+  confirmDlg(txt,function(){call('sendCommand',S.token,type,details).then(function(){toast('الأمر اتبعت');refresh()}).catch(function(e){toast(e.message||e)})})
+}
+function exceptional(){
+  dlg('<h3 style="margin-top:0">إصدار استثنائي</h3><p style="color:var(--muted);font-size:14px">Claude هيصدر برّه المواعيد. اكتب أرقام طلبات معينة، أو سيبها فاضية يصدر كل الجاهز.</p>'+
+    '<textarea id="exd" rows="3" placeholder="مثال: 301749621, 301793075"></textarea>'+
+    '<div class="row"><button class="btn gold" onclick="sendFromDlg(\'إصدار استثنائي\',\'exd\')">ابعت</button><button class="btn ghost" onclick="closeDlg()">إلغاء</button></div>')
+}
+function note(){
+  dlg('<h3 style="margin-top:0">ملاحظة لـ Claude</h3><textarea id="ntd" rows="4" placeholder="اكتب اللي عايزه..."></textarea>'+
+    '<div class="row"><button class="btn" onclick="sendFromDlg(\'ملاحظة لـ Claude\',\'ntd\')">ابعت</button><button class="btn ghost" onclick="closeDlg()">إلغاء</button></div>')
+}
+function sendFromDlg(type,id){var v=$(id).value.trim();if(type!=='إصدار استثنائي'&&!v)return;
+  closeDlg();call('sendCommand',S.token,type,v).then(function(){toast('الأمر اتبعت');refresh()}).catch(function(e){toast(e.message||e)})}
+
+/* ---------- manager: board ---------- */
+function vBoard(){
+  var d=S.data;var q=S.q.trim();var src=S.src;
+  var list=(d.orders||[]).filter(function(o){
+    if(src&&String(o['المصدر']).indexOf(src)<0)return false;
+    if(!q)return true;return [o['رقم الطلب'],o['العميل'],o['المدينة'],o['رقم البوليصة']].join(' ').indexOf(q)>=0});
+  var html='<div class="filters"><input placeholder="دوّر برقم الطلب أو العميل أو البوليصة" value="'+esc(S.q)+'" oninput="S.q=this.value;render();this.focus();this.setSelectionRange(this.value.length,this.value.length)">'+
+    '<select onchange="S.src=this.value;render()"><option value="">كل المصادر</option><option'+(src==='سلة'?' selected':'')+'>سلة</option><option'+(src==='أمازون'?' selected':'')+'>أمازون</option></select></div>';
+  html+='<div class="board">'+d.stages.map(function(s){
+    var items=list.filter(function(o){return o['المرحلة']===s});
+    if(s==='تم الشحن'||s==='ملغي/مرتجع')items=items.slice(-30).reverse();
+    return '<div class="col'+(items.length?'':' emptycol')+'"><h3>'+esc(s)+'<span>'+items.length+'</span></h3>'+(items.length?items.map(orderCard).join(''):'<div class="empty" style="padding:10px">—</div>')+'</div>'}).join('')+'</div>';
+  return html;
+}
+function orderCard(o){
+  var a='',id=esc(o['رقم الطلب']);
+  if(o['المرحلة']==='بانتظار تأكيد التحويل'&&S.data.user.role==='مدير')a+='<button class="btn sm ok" onclick="cmd(\'اتأكد التحويل\',\''+id+'\')">اتأكد التحويل</button>';
+  if(o['المرحلة']==='اتصدرت')a+='<button class="btn ok" onclick="prep(\''+id+'\',true)">اتجهز ✓</button>';
+  if(o['المرحلة']==='اتجهزت')a+='<button class="btn sm ghost" onclick="prep(\''+id+'\',false)">✓ اتجهز — رجّع</button>';
+  var amz=o['رقم أمازون']&&String(o['رقم أمازون'])!==String(o['رقم الطلب'])?o['رقم أمازون']:'';
+  var items=String(o['المنتج']||'').split(/\n|،\s*|\s\+\s/).filter(Boolean);
+  var row=function(k,v){return v?'<div class="kv"><span>'+k+'</span><b>'+v+'</b></div>':''};
+  return '<div class="oc"><div class="t"><bdi dir="ltr">'+id+'</bdi><span>'+tags(o)+'</span></div>'+
+    (amz?'<div class="sub2">أمازون: <bdi dir="ltr">'+esc(amz)+'</bdi></div>':'')+
+    '<div class="who2">'+esc(o['العميل'])+(o['المدينة']?' · '+esc(o['المدينة']):'')+'</div>'+
+    (o['المبلغ']!==''&&o['المبلغ']!=null?'<div class="amt">'+money(o['المبلغ'])+'</div>':'')+
+    (items.length?'<ul class="items">'+items.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul>':'')+
+    '<div class="kvs">'+row('الدفع',esc(o['الدفع']||''))+row('الشحن',esc(o['شركة الشحن']||''))+row('البوليصة',esc(o['رقم البوليصة']||''))+
+    row('آخر موعد شحن',esc(o['آخر موعد شحن']||''))+row('جهّزه',esc(o['جهّزه']||''))+'</div>'+
+    (o['ملاحظات']?'<div class="note">'+esc(o['ملاحظات'])+'</div>':'')+
+    (a?'<div class="a">'+a+'</div>':'')+'</div>'
+}
+function prep(id,done){call('markPrepared',S.token,id,done).then(function(r){if(!r.ok){toast(r.msg);return}toast(done?'اتعلّم إنه اتجهز':'رجع');refresh()}).catch(function(e){toast(e.message||e)})}
+
+/* ---------- amazon ---------- */
+function isAmz(o){return String(o['المصدر']||'').indexOf('أمازون')>=0}
+function vAmz(){
+  var list=(S.data.orders||[]).filter(isAmz);
+  var order=['بانتظار الإصدار','اتصدرت','اتجهزت','تم الشحن','ملغي/مرتجع'];
+  var cnt=function(s){return list.filter(function(o){return o['المرحلة']===s}).length};
+  var html='<div class="grid">'+stat(cnt('بانتظار الإصدار'),'مستنية شحن','gold')+stat(cnt('اتصدرت'),'اتصدرت ومستنية تجهيز','')+
+    stat(cnt('اتجهزت'),'اتجهزت','ok')+stat(cnt('تم الشحن'),'اتشحنت','blue')+'</div>';
+  list.sort(function(a,b){var x=order.indexOf(a['المرحلة'])-order.indexOf(b['المرحلة']);if(x)return x;return String(b['التاريخ']).localeCompare(String(a['التاريخ']))});
+  html+='<h2>طلبات أمازون ('+list.length+')</h2>'+(list.length?'<div class="cards">'+list.map(orderCard).join('')+'</div>':'<div class="empty">مفيش طلبات أمازون</div>');
+  return html;
+}
+
+/* ---------- days ---------- */
+function dayCard(x){
+  var f=function(u,label,hint){return '<a class="file'+(u?'':' off')+'" href="#" data-u="'+esc(u||'')+'" onclick="dl(this);return false">'+label+(hint?' <span class="hint">'+hint+'</span>':'')+'</a>'};
+  var branch=String(x['فواتير الفرع']||'').split(/\s+/).filter(Boolean);
+  var done=x['حالة التجهيز']==='اتجهز';
+  return '<div class="card" style="margin-bottom:10px"><div class="day"><div><div class="d">'+esc(dayName(x['اليوم']))+' · '+esc(x['القسم'])+'</div>'+
+    '<div style="color:var(--muted);font-size:13px;margin-top:2px">'+esc(x['عدد الطلبات'])+' طلب'+(x['التكلفة']!==''?' · '+money(x['التكلفة']):'')+
+    (done?' · <span class="pill p-done">اتجهز — '+esc(x['جهّزه'])+'</span>':' · <span class="pill p-new">'+esc(x['حالة التجهيز']||'لم يبدأ')+'</span>')+'</div></div>'+
+    (done?'':'<button class="btn sm ok" onclick="dayDone(\''+esc(day(x['اليوم']))+'\',\''+esc(x['القسم'])+'\')">خلصت التجهيز</button>')+'</div>'+
+    '<div class="files">'+f(x['رابط البوليصات'],'البوليصات','طابعة الاستيكر')+f(x['رابط الفواتير'],'الفواتير','طابعة عادية')+
+    (x['رابط التجهيز']?f(x['رابط التجهيز'],'التجهيز','للقراية'):'')+
+    branch.map(function(u,i){return f(u,'فاتورة فرع '+(i+1),'')}).join('')+'</div></div>'
+}
+/* الملفات: الضغط بيفتح المشاركة (واتساب وغيره)، ولو الجهاز مش بيدعمها بينزل الملف */
+var FILES={};
+function loadFile(u){if(!FILES[u])FILES[u]=call('getFile',S.token,u).then(function(r){var b=atob(r.b64),n=new Uint8Array(b.length);for(var i=0;i<b.length;i++)n[i]=b.charCodeAt(i);
+  return new File([n],r.name,{type:r.mime})}).catch(function(e){delete FILES[u];throw e});return FILES[u]}
+function prefetch(){[].slice.call(document.querySelectorAll('a.file[data-u]'),0,6).forEach(function(a){var u=a.getAttribute('data-u');if(u)loadFile(u).then(function(){a.classList.add('ready')}).catch(function(){})})}
+function saveFile(f){var url=URL.createObjectURL(f);var x=document.createElement('a');x.href=url;x.download=f.name;document.body.appendChild(x);x.click();x.remove();setTimeout(function(){URL.revokeObjectURL(url)},60000)}
+function canShareFile(f){try{return !!(navigator.canShare&&navigator.canShare({files:[f]}))}catch(e){return false}}
+function dl(a){var u=a.getAttribute('data-u');if(!u)return;var t=a.innerHTML;
+  var p=loadFile(u),done=false,file=null;p.then(function(f){done=true;file=f}).catch(function(){});
+  setTimeout(function(){
+    if(done&&file){share(file);return}
+    a.innerHTML='بجهّز الملف...';
+    p.then(function(f){a.innerHTML=t;a.classList.add('ready');
+      if(canShareFile(f)){dlg('<p style="margin-top:0">الملف جاهز: <b>'+esc(f.name)+'</b></p><div class="row"><button class="btn ok" id="shb">ابعت (واتساب)</button><button class="btn ghost" id="svb">نزّله</button></div>');
+        $('shb').onclick=function(){closeDlg();share(f)};$('svb').onclick=function(){closeDlg();saveFile(f)}}
+      else saveFile(f)})
+    .catch(function(e){a.innerHTML=t;toast('مقدرتش أجيب الملف: '+(e.message||e))})},0)}
+function share(f){if(canShareFile(f)){navigator.share({files:[f],title:f.name}).catch(function(e){if(e&&e.name!=='AbortError')saveFile(f)})}else{saveFile(f);toast('الجهاز ده مش بيدعم المشاركة، الملف اتنزل')}}
+function dayDone(d,sec){confirmDlg('تأكيد إن تجهيز «'+sec+'» يوم '+d+' خلص؟',function(){
+  call('markDayPrepared',S.token,d,sec).then(function(r){if(!r.ok){toast(r.msg);return}toast('تمام');refresh()})})}
+function vDays(){var d=S.data.days||[];return d.length?d.map(dayCard).join(''):'<div class="empty">لسه مفيش ملفات</div>'}
+
+/* ---------- preparer ---------- */
+function vPrep(){
+  var d=S.data;var latest=d.days.length?day(d.days[0]['اليوم']):'';
+  var todays=d.days.filter(function(x){return day(x['اليوم'])===latest});
+  var html='<h2>'+(latest?'ملفات '+esc(dayName(latest)):'مفيش ملفات لسه')+'</h2>'+todays.map(dayCard).join('');
+  var orders=(d.orders||[]).filter(function(o){return day(o['يوم الملف'])===latest});
+  if(orders.length){
+    var left=orders.filter(function(o){return o['المرحلة']==='اتصدرت'}).length;
+    html+='<h2>الطلبات ('+(orders.length-left)+' من '+orders.length+' اتجهزت)</h2><div class="cards">'+orders.map(orderCard).join('')+'</div>'}
+  return html;
+}
+
+/* ---------- commands / guide / log ---------- */
+function vCmds(){var c=S.data.cmds||[];
+  var pc={'جديد':'p-new','جاري':'p-run','تم':'p-done','ملغي':'p-x','مرفوض':'p-bad'};
+  return '<div class="filters"><button class="btn gold" onclick="exceptional()">إصدار استثنائي</button><button class="btn ghost" onclick="note()">ملاحظة لـ Claude</button></div>'+
+  (c.length?'<table><tr><th>الوقت</th><th>الأمر</th><th>التفاصيل</th><th>الحالة</th><th>رد Claude</th><th></th></tr>'+c.map(function(x){
+    return '<tr><td>'+dt(x['الوقت'])+'<div style="font-size:12px;color:var(--muted)">'+esc(x['المستخدم'])+'</div></td><td><b>'+esc(x['الأمر'])+'</b></td><td>'+esc(x['التفاصيل'])+'</td><td><span class="pill '+(pc[x['الحالة']]||'')+'">'+esc(x['الحالة'])+'</span></td><td>'+esc(x['الرد'])+(x['وقت التنفيذ']?'<div style="font-size:12px;color:var(--muted)">'+dt(x['وقت التنفيذ'])+'</div>':'')+'</td><td>'+
+    (x['الحالة']==='جديد'?'<button class="btn sm ghost" onclick="cancelCmd(\''+esc(x['المعرف'])+'\')">إلغاء</button>':'')+'</td></tr>'}).join('')+'</table>':'<div class="empty">مفيش أوامر لسه</div>')}
+function cancelCmd(id){call('cancelCommand',S.token,id).then(function(r){toast(r.ok?'اتلغى':r.msg);refresh()})}
+function vGuide(){var g={};(S.data.guide||[]).forEach(function(r){(g[r['القسم']]=g[r['القسم']]||[]).push(r['القاعدة'])});
+  return '<div class="card">'+Object.keys(g).map(function(k){return '<div class="guide-sec"><h3>'+esc(k)+'</h3><ul>'+g[k].map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div>'}).join('')+
+  '<div style="color:var(--muted);font-size:13px">القواعد دي متخزنة في تبويب «الدليل» في الشيت — أي تعديل هناك بيظهر هنا.</div></div>'}
+function vLog(){var l=S.data.log||[];return l.length?'<table><tr><th>الوقت</th><th>مين</th><th>إيه اللي حصل</th></tr>'+l.map(function(x){return '<tr><td>'+dt(x['الوقت'])+'</td><td>'+esc(x['المستخدم'])+'</td><td>'+esc(x['الحدث'])+'</td></tr>'}).join('')+'</table>':'<div class="empty">فاضي</div>'}
+
+/* ---------- dialogs ---------- */
+function dlg(h){$('dlgBody').innerHTML=h;$('dlg').showModal()}
+function closeDlg(){$('dlg').close()}
+var _cb=null;
+function confirmDlg(t,cb){_cb=cb;dlg('<p style="margin-top:0;line-height:1.7">'+esc(t)+'</p><div class="row"><button class="btn gold" onclick="closeDlg();_cb&&_cb()">تأكيد</button><button class="btn ghost" onclick="closeDlg()">إلغاء</button></div>')}
+function openPw(){dlg('<h3 style="margin-top:0">تغيير كلمة السر</h3><label>القديمة</label><input id="op" type="password"><label>الجديدة (6 حروف على الأقل)</label><input id="np" type="password"><div class="err" id="perr"></div>'+
+  '<div class="row"><button class="btn" onclick="savePw()">حفظ</button><button class="btn ghost" onclick="closeDlg()">إلغاء</button></div>')}
+function savePw(){call('changePassword',S.token,$('op').value,$('np').value).then(function(r){if(!r.ok){$('perr').textContent=r.msg;return}closeDlg();toast('كلمة السر اتغيرت')})}
+
+/* ---------- boot ---------- */
+(function(){var t=null;try{t=localStorage.getItem('ob_t')}catch(e){}
+  if(t){S.token=t;call('getData',t).then(function(d){S.data=d;start(d.user)}).catch(function(){})}})();
+</script>
+</body>
+</html>
