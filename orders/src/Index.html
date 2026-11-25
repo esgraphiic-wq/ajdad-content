@@ -69,7 +69,13 @@ h2:first-child{margin-top:0}
 .oc .a .btn:not(.sm){flex:1}
 .oc .sub2{font-size:12px;color:var(--muted);margin-top:2px}
 .oc .who2{margin-top:6px;font-weight:700;color:var(--ink)}
-.oc .amt{font-size:18px;font-weight:800;color:var(--brand);margin-top:4px}
+.oc .amtrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}
+.oc .amt{font-size:18px;font-weight:800;color:var(--brand)}
+.oc .pay{font-size:13px;font-weight:800;padding:3px 12px;border-radius:20px;white-space:nowrap}
+.pay.p-paid{background:var(--ok-soft);color:var(--ok)}
+.pay.p-bank{background:var(--blue-soft);color:var(--blue)}
+.pay.p-cod{background:var(--warn-soft);color:var(--warn)}
+.pay.p-bnpl{background:#efe4f7;color:#6b3a8a}
 .oc .items{margin:6px 0 0;padding:0 18px 0 0;line-height:1.7}
 .oc .kvs{margin-top:6px;display:grid;gap:2px}
 .oc .kv{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--muted)}
@@ -264,6 +270,7 @@ function vBoard(){
     return '<div class="col'+(items.length?'':' emptycol')+'"><h3>'+esc(s)+'<span>'+items.length+'</span></h3>'+(items.length?items.map(orderCard).join(''):'<div class="empty" style="padding:10px">—</div>')+'</div>'}).join('')+'</div>';
   return html;
 }
+function payCls(p){p=String(p);if(/تحويل|bank/i.test(p))return 'p-bank';if(/استلام|cod/i.test(p))return 'p-cod';if(/تمارا|تابي|tamara|tabby/i.test(p))return 'p-bnpl';return 'p-paid'}
 function orderCard(o){
   var a='',id=esc(o['رقم الطلب']);
   if(o['المرحلة']==='بانتظار تأكيد التحويل'&&S.data.user.role==='مدير')a+='<button class="btn sm ok" onclick="cmd(\'اتأكد التحويل\',\''+id+'\')">اتأكد التحويل</button>';
@@ -275,9 +282,10 @@ function orderCard(o){
   return '<div class="oc"><div class="t"><bdi dir="ltr">'+id+'</bdi><span>'+tags(o)+'</span></div>'+
     (amz?'<div class="sub2">أمازون: <bdi dir="ltr">'+esc(amz)+'</bdi></div>':'')+
     '<div class="who2">'+esc(o['العميل'])+(o['المدينة']?' · '+esc(o['المدينة']):'')+'</div>'+
-    (o['المبلغ']!==''&&o['المبلغ']!=null?'<div class="amt">'+money(o['المبلغ'])+'</div>':'')+
+    '<div class="amtrow">'+(o['المبلغ']!==''&&o['المبلغ']!=null?'<span class="amt">'+money(o['المبلغ'])+'</span>':'<span></span>')+
+    (o['الدفع']?'<span class="pay '+payCls(o['الدفع'])+'">'+esc(o['الدفع'])+'</span>':'')+'</div>'+
     (items.length?'<ul class="items">'+items.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul>':'')+
-    '<div class="kvs">'+row('الدفع',esc(o['الدفع']||''))+row('الشحن',esc(o['شركة الشحن']||''))+row('البوليصة',esc(o['رقم البوليصة']||''))+
+    '<div class="kvs">'+row('الشحن',esc(o['شركة الشحن']||''))+row('البوليصة',esc(o['رقم البوليصة']||''))+
     row('آخر موعد شحن',esc(o['آخر موعد شحن']||''))+row('جهّزه',esc(o['جهّزه']||''))+'</div>'+
     (o['ملاحظات']?'<div class="note">'+esc(o['ملاحظات'])+'</div>':'')+
     (a?'<div class="a">'+a+'</div>':'')+'</div>'
