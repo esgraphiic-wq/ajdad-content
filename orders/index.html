@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لوحة الطلبات — أرض الأجداد</title>
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
+</head>
+<body style="font-family:system-ui,sans-serif;text-align:center;padding-top:80px;color:#5a3d22;background:#f6f1e7">
+<div id="ld">جاري التحميل...</div>
+<script>
+(function () {
+  var API = 'https://script.google.com/macros/s/AKfycbzycQqfDITM0a4KSDHiHuP2ryKC9CvN80_K37oLAg5dTJHbxcgV74iccVng8dMOHS5m/exec';
+  var KEY = 'ajd_orders_app_html';
+  var cached = null;
+  try { cached = localStorage.getItem(KEY); } catch (e) {}
+  function show(h) {
+    var go = function () { document.open(); document.write(h); document.close(); };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+  }
+  var fresh = fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'app' }) })
+    .then(function (r) { return r.text(); });
+  if (cached) {
+    show(cached);
+    fresh.then(function (h) {
+      if (h && h.length > 5000 && h !== cached) { try { localStorage.setItem(KEY, h); } catch (e) {} }
+    }).catch(function () {});
+  } else {
+    fresh.then(function (h) {
+      if (h && h.length > 5000) { try { localStorage.setItem(KEY, h); } catch (e) {} }
+      show(h);
+    }).catch(function () { document.getElementById('ld').textContent = 'حصلت مشكلة في التحميل، حدّث الصفحة'; });
+  }
+})();
+</script>
+</body>
+</html>
