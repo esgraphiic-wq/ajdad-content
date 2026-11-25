@@ -122,6 +122,7 @@ dialog::backdrop{background:rgba(43,33,24,.4)}
     <label>كلمة السر</label><input id="pw" type="password" autocomplete="current-password">
     <div class="err" id="lerr"></div>
     <button class="btn" style="width:100%;margin-top:8px" id="lbtn" onclick="doLogin()">دخول</button>
+    <div style="text-align:center;margin-top:14px"><a href="#" onclick="forgot();return false" style="color:var(--brand);font-size:14px">نسيت كلمة السر؟</a></div>
   </div>
 </section>
 
@@ -142,7 +143,7 @@ dialog::backdrop{background:rgba(43,33,24,.4)}
 
 <script>
 var S = { token: null, data: null, tab: null, q: '', src: '' };
-var MANAGER_TABS = [['home','الرئيسية'],['board','الطلبات'],['amz','أمازون'],['days','ملفات الأيام'],['cmds','الأوامر'],['guide','الدليل'],['log','السجل']];
+var MANAGER_TABS = [['home','الرئيسية'],['board','سلة'],['amz','أمازون'],['days','ملفات الأيام'],['cmds','الأوامر'],['guide','الدليل'],['log','السجل']];
 var PREP_TABS = [['prep','ملفات اليوم'],['days','الأيام اللي فاتت']];
 
 function $(id){return document.getElementById(id)}
@@ -164,13 +165,13 @@ function doLogin(){
   call('login',$('em').value,$('pw').value).then(function(r){
     $('lbtn').disabled=false;
     if(!r.ok){$('lerr').textContent=r.msg;return}
-    S.token=r.token;try{localStorage.setItem('ob_t',r.token)}catch(e){}
+    S.token=r.token;try{localStorage.setItem('ob_t',r.token);localStorage.setItem('ob_em',$('em').value.trim())}catch(e){}
     start(r.user);
   }).catch(function(e){$('lbtn').disabled=false;$('lerr').textContent='حصلت مشكلة: '+(e.message||e)})
 }
 $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
 
-function logout(expired){S.token=null;try{localStorage.removeItem('ob_t')}catch(e){}
+function logout(expired){if(!expired&&S.token){var t=S.token;call('logout',t).catch(function(){})}S.token=null;try{localStorage.removeItem('ob_t')}catch(e){}
   $('app').classList.add('hidden');$('login').classList.remove('hidden');if(expired)$('lerr').textContent='الجلسة خلصت، ادخل تاني'}
 
 function start(u){
@@ -202,7 +203,8 @@ function tags(o){var t='';var src=String(o['المصدر']||'');var typ=String(o
   if(typ.indexOf('استلام')>=0&&typ.indexOf('فرع')<0)t+='<span class="tag cod">عند الاستلام</span>';
   if(typ.indexOf('فرع')>=0)t+='<span class="tag">فرع</span>';
   return t}
-function count(st){return (S.data.orders||[]).filter(function(o){return o['المرحلة']===st}).length}
+function count(st){return (S.data.orders||[]).filter(function(o){return !isAmz(o)&&o['المرحلة']===st}).length}
+function countA(st){return (S.data.orders||[]).filter(function(o){return isAmz(o)&&o['المرحلة']===st}).length}
 function st(k){var s=S.data.state[k];return s?s.v:''}
 function stT(k){var s=S.data.state[k];return s?s.t:''}
 
@@ -217,23 +219,27 @@ function vHome(){
     '<div class="acts"><button class="btn gold" '+(line?'':'disabled')+' onclick="cmd(\'أصدر\',\'\')">أصدر</button>'+
     '<button class="btn ghost" onclick="exceptional()">إصدار استثنائي</button>'+
     '<button class="btn ghost" onclick="note()">ملاحظة لـ Claude</button></div></div>';
-  html+='<h2>الطلبات دلوقتي</h2><div class="grid">'+
+  html+='<h2>طلبات سلة</h2><div class="grid">'+
     stat(count('بانتظار الإصدار'),'بانتظار الإصدار','gold')+
     stat(count('بانتظار تأكيد التحويل'),'تحويل بنكي مستني تأكيد','blue')+
     stat(count('دفع عند الاستلام'),'دفع عند الاستلام','warn')+
     stat(count('اتصدرت'),'اتصدرت ومستنية تجهيز','')+
     stat(count('اتجهزت'),'اتجهزت','ok')+
-    stat(count('استلام من الفرع'),'استلام من الفرع','')+
-    stat((d.orders||[]).filter(function(o){return isAmz(o)&&o['المرحلة']==='بانتظار الإصدار'}).length,'أمازون مستنية شحن','gold')+'</div>';
+    stat(count('استلام من الفرع'),'استلام من الفرع','')+'</div>';
+  html+='<h2>طلبات أمازون</h2><div class="grid">'+
+    stat(countA('بانتظار الإصدار'),'مستنية شحن','gold')+
+    stat(countA('اتصدرت'),'اتصدرت ومستنية تجهيز','')+
+    stat(countA('اتجهزت'),'اتجهزت','ok')+'</div>';
   html+='<h2>الأرصدة</h2><div class="grid">'+
     stat(money(st('رصيد محفظة الشحن')),'محفظة الشحن · '+dt(stT('رصيد محفظة الشحن')),'')+
     stat(money(st('رصيد المدفوعات')),'المدفوعات · '+dt(stT('رصيد المدفوعات')),'')+
     '<div class="card stat"><div class="n" style="font-size:18px">'+(dt(st('آخر تشغيل لـ Claude'))||'—')+'</div><div class="l">آخر مرة Claude اشتغل</div></div>'+'</div>';
-  var transfers=(d.orders||[]).filter(function(o){return o['المرحلة']==='بانتظار تأكيد التحويل'});
+  var transfers=(d.orders||[]).filter(function(o){return !isAmz(o)&&o['المرحلة']==='بانتظار تأكيد التحويل'});
   if(transfers.length){html+='<h2>تحويلات مستنية تأكيد أبو فهد</h2><div class="cards">'+transfers.map(orderCard).join('')+'</div>'}
-  var waiting=(d.orders||[]).filter(function(o){return o['المرحلة']==='بانتظار الإصدار'});
-  if(waiting.length){var tot=waiting.reduce(function(s,o){return s+(parseFloat(o['المبلغ'])||0)},0);
-    html+='<h2>مستنية الإصدار ('+waiting.length+') <small style="font-weight:500;color:var(--muted)">· إجمالي '+money(tot)+'</small></h2><div class="cards">'+waiting.map(orderCard).join('')+'</div>'}
+  var wsec=function(title,list){if(!list.length)return '';var tot=list.reduce(function(s,o){return s+(parseFloat(o['المبلغ'])||0)},0);
+    return '<h2>'+title+' ('+list.length+') <small style="font-weight:500;color:var(--muted)">· إجمالي '+money(tot)+'</small></h2><div class="cards">'+list.map(orderCard).join('')+'</div>'};
+  html+=wsec('سلة — مستنية الإصدار',(d.orders||[]).filter(function(o){return !isAmz(o)&&o['المرحلة']==='بانتظار الإصدار'}));
+  html+=wsec('أمازون — مستنية الشحن',(d.orders||[]).filter(function(o){return isAmz(o)&&o['المرحلة']==='بانتظار الإصدار'}));
   var today=(d.days||[]).slice(0,4);
   html+='<h2>آخر ملفات</h2>'+(today.length?today.map(dayCard).join(''):'<div class="empty">لسه مفيش ملفات</div>');
   return html;
@@ -258,12 +264,12 @@ function sendFromDlg(type,id){var v=$(id).value.trim();if(type!=='إصدار ا�
 
 /* ---------- manager: board ---------- */
 function vBoard(){
-  var d=S.data;var q=S.q.trim();var src=S.src;
+  var d=S.data;var q=S.q.trim();
   var list=(d.orders||[]).filter(function(o){
-    if(src&&String(o['المصدر']).indexOf(src)<0)return false;
+    if(isAmz(o))return false;
     if(!q)return true;return [o['رقم الطلب'],o['العميل'],o['المدينة'],o['رقم البوليصة']].join(' ').indexOf(q)>=0});
   var html='<div class="filters"><input placeholder="دوّر برقم الطلب أو العميل أو البوليصة" value="'+esc(S.q)+'" oninput="S.q=this.value;render();this.focus();this.setSelectionRange(this.value.length,this.value.length)">'+
-    '<select onchange="S.src=this.value;render()"><option value="">كل المصادر</option><option'+(src==='سلة'?' selected':'')+'>سلة</option><option'+(src==='أمازون'?' selected':'')+'>أمازون</option></select></div>';
+'</div>';
   html+='<div class="board">'+d.stages.map(function(s){
     var items=list.filter(function(o){return o['المرحلة']===s});
     if(s==='تم الشحن'||s==='ملغي/مرتجع')items=items.slice(-30).reverse();
@@ -365,6 +371,22 @@ function vGuide(){var g={};(S.data.guide||[]).forEach(function(r){(g[r['القس
   '<div style="color:var(--muted);font-size:13px">القواعد دي متخزنة في تبويب «الدليل» في الشيت — أي تعديل هناك بيظهر هنا.</div></div>'}
 function vLog(){var l=S.data.log||[];return l.length?'<table><tr><th>الوقت</th><th>مين</th><th>إيه اللي حصل</th></tr>'+l.map(function(x){return '<tr><td>'+dt(x['الوقت'])+'</td><td>'+esc(x['المستخدم'])+'</td><td>'+esc(x['الحدث'])+'</td></tr>'}).join('')+'</table>':'<div class="empty">فاضي</div>'}
 
+/* ---------- forgot password ---------- */
+function forgot(){var em=$('em').value.trim();
+  dlg('<h3 style="margin-top:0">استرجاع كلمة السر</h3><p style="color:var(--muted);font-size:14px;margin-top:0">هنبعتلك كود على الإيميل المتسجل.</p><label>الإيميل</label><input id="fem" type="email" value="'+esc(em)+'"><div class="err" id="ferr"></div>'+
+  '<div class="row"><button class="btn" id="fbtn" onclick="sendReset()">ابعت الكود</button><button class="btn ghost" onclick="closeDlg()">إلغاء</button></div>')}
+function sendReset(){var em=$('fem').value.trim();if(!em){$('ferr').textContent='اكتب الإيميل';return}$('fbtn').disabled=true;
+  call('requestReset',em).then(function(){
+    dlg('<h3 style="margin-top:0">اكتب الكود</h3><p style="color:var(--muted);font-size:14px;margin-top:0">لو الإيميل متسجل هيوصلك كود من 6 أرقام خلال دقيقة (بص في الـ Spam لو مالقيتوش).</p>'+
+    '<label>الكود</label><input id="fcode" inputmode="numeric" autocomplete="one-time-code"><label>كلمة السر الجديدة (6 حروف على الأقل)</label><input id="fnew" type="password" autocomplete="new-password"><div class="err" id="ferr2"></div>'+
+    '<div class="row"><button class="btn" id="fbtn2" onclick="doReset(\''+esc(em)+'\')">غيّر وادخل</button><button class="btn ghost" onclick="closeDlg()">إلغاء</button></div>')})
+  .catch(function(e){$('fbtn').disabled=false;$('ferr').textContent='حصلت مشكلة: '+(e.message||e)})}
+function doReset(em){$('fbtn2').disabled=true;
+  call('resetPassword',em,$('fcode').value,$('fnew').value).then(function(r){
+    if(!r.ok){$('fbtn2').disabled=false;$('ferr2').textContent=r.msg;return}
+    closeDlg();S.token=r.token;try{localStorage.setItem('ob_t',r.token);localStorage.setItem('ob_em',em)}catch(e){}toast('كلمة السر اتغيرت');start(r.user)})
+  .catch(function(e){$('fbtn2').disabled=false;$('ferr2').textContent='حصلت مشكلة: '+(e.message||e)})}
+
 /* ---------- dialogs ---------- */
 function dlg(h){$('dlgBody').innerHTML=h;$('dlg').showModal()}
 function closeDlg(){$('dlg').close()}
@@ -375,7 +397,7 @@ function openPw(){dlg('<h3 style="margin-top:0">تغيير كلمة السر</h3
 function savePw(){call('changePassword',S.token,$('op').value,$('np').value).then(function(r){if(!r.ok){$('perr').textContent=r.msg;return}closeDlg();toast('كلمة السر اتغيرت')})}
 
 /* ---------- boot ---------- */
-(function(){var t=null;try{t=localStorage.getItem('ob_t')}catch(e){}
+(function(){var t=null;try{t=localStorage.getItem('ob_t');var em=localStorage.getItem('ob_em');if(em)$('em').value=em}catch(e){}
   if(t){S.token=t;call('getData',t).then(function(d){S.data=d;start(d.user)}).catch(function(){})}})();
 </script>
 </body>
