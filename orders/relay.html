@@ -1,0 +1,8 @@
+<!DOCTYPE html><meta charset="utf-8"><title>relay</title><script>
+const API='https://script.google.com/macros/s/AKfycbzycQqfDITM0a4KSDHiHuP2ryKC9CvN80_K37oLAg5dTJHbxcgV74iccVng8dMOHS5m/exec';
+const OK=['https://s.salla.sa','https://sellercentral.amazon.sa'];
+addEventListener('message',async e=>{if(!OK.includes(e.origin)||!e.data||!e.data.relayId)return;
+ let out;try{out=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:e.data.action,args:e.data.args})}).then(r=>r.json());}catch(err){out={ok:false,error:String(err)}}
+ e.source.postMessage({relayId:e.data.relayId,out},e.origin);});
+parent.postMessage({relayReady:true},'*');
+</script>
