@@ -333,7 +333,7 @@ function vAmz(){
   var all=(S.data.orders||[]).filter(isAmz),list=all.filter(matchQ);
   var cnt=function(st){return all.filter(function(o){return o['المرحلة']===st}).length};
   var html='<div class="grid">'+stat(cnt('بانتظار الإصدار'),'مستنية شحن','gold')+stat(cnt('اتصدرت'),'اتصدرت ومستنية تتجمع','')+
-    stat(cnt('اتجمعت'),'اتجمعت ومستنية تتبعت','blue')+stat(cnt('اتبعتت'),'اتبعتت','ok')+'</div>'+searchBox();
+    stat(cnt('اتجمعت'),'اتجمعت ومستنية تتبعت','blue')+stat(cnt('اتبعتت'),'اتبعتت','ok')+'</div><div style="height:10px"></div>'+searchBox();
   var act=list.filter(function(o){return DONE_ST.indexOf(o['المرحلة'])<0});
   html+='<h2>شغالة ('+act.length+')</h2>'+(act.length?'<div class="cards">'+act.map(orderCard).join('')+'</div>':'<div class="empty">مفيش طلبات أمازون شغالة</div>');
   return html+bundlesSection(true,list);
