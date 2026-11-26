@@ -153,7 +153,7 @@ dialog::backdrop{background:rgba(43,33,24,.4)}
 <script>
 var S = { token: null, data: null, tab: null, q: '', src: '' };
 var MANAGER_TABS = [['home','الرئيسية'],['board','سلة'],['amz','أمازون'],['cmds','الأوامر'],['guide','الدليل'],['log','السجل']];
-var PREP_TABS = [['prep','آخر تجميعات'],['bundles','كل التجميعات']];
+var PREP_TABS = [['prep','التجميعات']];
 
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -206,7 +206,7 @@ window.addEventListener('focus',function(){if(S.token)refresh(true)});
 
 function render(){
   [].forEach.call(document.querySelectorAll('nav button'),function(b){b.classList.toggle('on',b.dataset.t===S.tab)});
-  var f={home:vHome,board:vBoard,amz:vAmz,bundles:vBundles,cmds:vCmds,guide:vGuide,log:vLog,prep:vPrep}[S.tab];
+  var f={home:vHome,board:vBoard,amz:vAmz,cmds:vCmds,guide:vGuide,log:vLog,prep:vPrep}[S.tab];
   $('main').innerHTML=f?f():'';
   setTimeout(prefetch,300);
 }
@@ -367,22 +367,20 @@ function bundleCard(x){
   var act='';
   if(isMgr&&!sent)act='<button class="btn ok" '+(missing.length?'disabled title="ناقص ملفات"':'')+' onclick="bundleSent(\''+id+'\',true)">اتبعتت ✓</button>';
   if(isMgr&&sent)act='<button class="btn sm ghost" onclick="bundleSent(\''+id+'\',false)">رجّعها مفتوحة</button>';
-  var n=ids.length||orders.length;
-  var head='<div class="d">'+(amz?'أمازون':'سلة')+' · '+id+'</div>'+
-    '<div style="color:var(--muted);font-size:13px;margin-top:2px">'+n+' طلب'+(x['التكلفة']!==''&&x['التكلفة']!=null?' · شحن '+money(x['التكلفة']):'')+
-    ' · بدأت '+esc(dayName(x['بدأت']))+
-    (sent?' · <span class="pill p-done">اتبعتت'+(x['بعتها']?' — '+esc(x['بعتها']):'')+(x['وقت الإرسال']?' '+dt(x['وقت الإرسال']):'')+'</span>'
-         :' · <span class="pill p-new">مفتوحة — أي طلب جديد هيتجمع عليها</span>')+'</div>'+bundleSummary(x,orders);
-  var files='<div class="files">'+f(x['رابط البوليصات'],'البوليصات','طابعة الاستيكر')+f(x['رابط الفواتير'],'الفواتير','طابعة عادية')+
-    (amz?f(x['رابط التجهيز'],'التجهيز','للقراية'):'')+'</div>';
-  var list=orders.length?'<div class="olist">'+orders.map(orderLine).join('')+'</div>':
-    (ids.length?'<div class="bids">'+ids.map(function(i){return '<bdi dir="ltr">'+esc(i)+'</bdi>'}).join(' · ')+'</div>':'');
-  if(sent){var k='b:'+x['رقم التجميعة'];
-    return '<details class="card bundle sent bsum" style="margin-bottom:10px" data-k="'+esc(k)+'" ontoggle="tg(this)"'+(OPEN[k]?' open':'')+'><summary><span class="arr">‹</span>'+head+'</summary>'+
-      '<div style="margin-top:8px">'+act+'</div>'+files+list+'</details>'}
-  return '<div class="card bundle" style="margin-bottom:10px"><div class="day"><div>'+head+
+  var n=ids.length||orders.length,k='b:'+x['رقم التجميعة'];
+  var head='<span class="arr">‹</span><div class="d">تجميعة '+esc(dayName(x['بدأت']))+'</div>'+
+    '<div style="font-size:14px;margin-top:4px"><b>'+n+' طلب</b>'+
+    (sent?' · <span class="pill p-done">اتبعتت'+(x['وقت الإرسال']?' '+dt(x['وقت الإرسال']):'')+'</span>'
+         :' · <span class="pill p-new">مفتوحة</span>')+'</div>';
+  var body='<div style="color:var(--muted);font-size:12px;margin-top:8px">'+id+(x['التكلفة']!==''&&x['التكلفة']!=null?' · شحن '+money(x['التكلفة']):'')+(x['بعتها']?' · بعتها '+esc(x['بعتها']):'')+'</div>'+
+    bundleSummary(x,orders)+
     (missing.length?'<div class="note" style="margin-top:6px">ناقص: '+missing.join(' و ')+' — Claude بيجهزها</div>':'')+
-    '</div>'+act+'</div>'+files+list+'</div>'
+    '<div class="files">'+f(x['رابط البوليصات'],'البوليصات','طابعة الاستيكر')+f(x['رابط الفواتير'],'الفواتير','طابعة عادية')+
+    (amz?f(x['رابط التجهيز'],'التجهيز','للقراية'):'')+'</div>'+
+    (act?'<div style="margin-top:8px">'+act+'</div>':'')+
+    (orders.length?'<div class="olist">'+orders.map(orderLine).join('')+'</div>':
+      (ids.length?'<div class="bids">'+ids.map(function(i){return '<bdi dir="ltr">'+esc(i)+'</bdi>'}).join(' · ')+'</div>':''));
+  return '<details class="card bundle bsum'+(sent?' sent':'')+'" style="margin-bottom:10px" data-k="'+esc(k)+'" ontoggle="tg(this)"'+(OPEN[k]?' open':'')+'><summary>'+head+'</summary>'+body+'</details>'
 }
 function bundleSent(id,sent){confirmDlg(sent?'تأكيد إنك بعت التجميعة '+id+'؟ أي طلب جديد هيتجمع في تجميعة جديدة.':'ترجّع التجميعة '+id+' مفتوحة؟',function(){
   call('markBundleSent',S.token,id,sent).then(function(r){if(!r.ok){toast(r.msg);return}toast(sent?'اتعلّمت إنها اتبعتت':'رجعت مفتوحة');refresh()}).catch(function(e){toast(e.message||e)})})}
@@ -408,12 +406,9 @@ function vBundles(){var d=S.data.bundles||[];return d.length?d.map(bundleCard).j
 
 /* ---------- preparer ---------- */
 function vPrep(){
-  var d=S.data;var list=(d.bundles||[]).slice(0,4);
-  var html='<h2>آخر تجميعات</h2>'+(list.length?list.map(bundleCard).join(''):'<div class="empty">مفيش تجميعات لسه</div>');
-  var b0=list[0];
-  if(b0){var orders=(d.orders||[]).filter(function(o){return String(o['التجميعة'])===String(b0['رقم التجميعة'])});
-    }
-  return html;
+  var d=S.data.bundles||[];
+  var sec=function(amz,t){var l=d.filter(function(b){return isSalla(b)!==amz});return l.length?'<h2>'+t+'</h2>'+l.map(bundleCard).join(''):''};
+  return (sec(false,'سلة')+sec(true,'أمازون'))||'<div class="empty">مفيش تجميعات لسه</div>';
 }
 
 /* ---------- commands / guide / log ---------- */
