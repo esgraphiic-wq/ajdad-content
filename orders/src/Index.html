@@ -152,7 +152,7 @@ dialog::backdrop{background:rgba(43,33,24,.4)}
 
 <script>
 var S = { token: null, data: null, tab: null, q: '', src: '' };
-var MANAGER_TABS = [['home','الرئيسية'],['board','سلة'],['amz','أمازون'],['bundles','التجميعات'],['cmds','الأوامر'],['guide','الدليل'],['log','السجل']];
+var MANAGER_TABS = [['home','الرئيسية'],['board','سلة'],['amz','أمازون'],['cmds','الأوامر'],['guide','الدليل'],['log','السجل']];
 var PREP_TABS = [['prep','آخر تجميعات'],['bundles','كل التجميعات']];
 
 function $(id){return document.getElementById(id)}
@@ -281,18 +281,31 @@ function sendFromDlg(type,id){var v=$(id).value.trim();if(type!=='إصدار ا�
   closeDlg();call('sendCommand',S.token,type,v).then(function(){toast('الأمر اتبعت');refresh()}).catch(function(e){toast(e.message||e)})}
 
 /* ---------- manager: board ---------- */
+var DONE_ST=['اتجمعت','اتبعتت','تم الشحن'];
+function matchQ(o){var q=S.q.trim();if(!q)return true;return [o['رقم الطلب'],o['رقم أمازون'],o['العميل'],o['المدينة'],o['رقم البوليصة']].join(' ').indexOf(q)>=0}
+function searchBox(){return '<div class="filters"><input placeholder="دوّر برقم الطلب أو العميل أو البوليصة" value="'+esc(S.q)+'" oninput="S.q=this.value;render();this.focus();this.setSelectionRange(this.value.length,this.value.length)"></div>'}
+/* التجميعات + الطلبات اللي اتجمعت/اتبعتت لقسم معيّن (سلة أو أمازون) */
+function bundlesSection(amz,list){
+  var bs=(S.data.bundles||[]).filter(function(b){return isSalla(b)!==amz});
+  var q=S.q.trim();
+  if(q)bs=bs.filter(function(b){return bundleOrders(b).some(matchQ)||String(b['رقم التجميعة']).indexOf(q)>=0});
+  bs.sort(function(x,y){var a=x['الحالة']==='اتبعتت',b=y['الحالة']==='اتبعتت';if(a!==b)return a?1:-1;return String(y['بدأت']).localeCompare(String(x['بدأت']))});
+  var inB={};(S.data.bundles||[]).forEach(function(b){inB[b['رقم التجميعة']]=1});
+  var loose=list.filter(function(o){return DONE_ST.indexOf(o['المرحلة'])>=0&&!inB[o['التجميعة']]});
+  var html='<h2>التجميعات</h2>'+(bs.length?bs.map(bundleCard).join(''):'<div class="empty">لسه مفيش تجميعات</div>');
+  if(loose.length)html+='<details class="card bsum" style="margin-bottom:10px" data-k="loose:'+(amz?'a':'s')+'" ontoggle="tg(this)"'+(OPEN['loose:'+(amz?'a':'s')]?' open':'')+
+    '><summary><span class="arr">‹</span><div class="d">طلبات قبل نظام التجميعات</div><div style="color:var(--muted);font-size:13px;margin-top:2px">'+loose.length+' طلب</div></summary><div class="olist">'+loose.slice(-60).reverse().map(orderLine).join('')+'</div></details>';
+  return html}
 function vBoard(){
-  var d=S.data;var q=S.q.trim();
-  var list=(d.orders||[]).filter(function(o){
-    if(isAmz(o))return false;
-    if(!q)return true;return [o['رقم الطلب'],o['العميل'],o['المدينة'],o['رقم البوليصة']].join(' ').indexOf(q)>=0});
-  var html='<div class="filters"><input placeholder="دوّر برقم الطلب أو العميل أو البوليصة" value="'+esc(S.q)+'" oninput="S.q=this.value;render();this.focus();this.setSelectionRange(this.value.length,this.value.length)">'+
-'</div>';
-  html+='<div class="board">'+d.stages.map(function(s){
+  var d=S.data;
+  var list=(d.orders||[]).filter(function(o){return !isAmz(o)&&matchQ(o)});
+  var html=searchBox();
+  html+='<div class="board">'+d.stages.filter(function(s){return DONE_ST.indexOf(s)<0}).map(function(s){
     var items=list.filter(function(o){return o['المرحلة']===s});
-    if(s==='تم الشحن'||s==='ملغي/مرتجع')items=items.slice(-30).reverse();
-    return '<div class="col'+(items.length?'':' emptycol')+'"><h3>'+esc(s)+'<span>'+items.length+'</span></h3>'+(items.length?(s==='اتبعتت'||s==='تم الشحن'?'<div class="olist" style="margin-top:0">'+items.map(orderLine).join('')+'</div>':items.map(orderCard).join('')):'<div class="empty" style="padding:10px">—</div>')+'</div>'}).join('')+'</div>';
-  return html;
+    if(s==='ملغي/مرتجع')items=items.slice(-30).reverse();
+    var body=items.length?(s==='ملغي/مرتجع'?'<div class="olist" style="margin-top:0">'+items.map(orderLine).join('')+'</div>':items.map(orderCard).join('')):'<div class="empty" style="padding:10px">—</div>';
+    return '<div class="col'+(items.length?'':' emptycol')+'"><h3>'+esc(s)+'<span>'+items.length+'</span></h3>'+body+'</div>'}).join('')+'</div>';
+  return html+bundlesSection(false,list);
 }
 function payCls(p){p=String(p);if(/تحويل|bank/i.test(p))return 'p-bank';if(/استلام|cod/i.test(p))return 'p-cod';if(/تمارا|تابي|tamara|tabby/i.test(p))return 'p-bnpl';return 'p-paid'}
 function orderCard(o){
@@ -317,15 +330,13 @@ function orderCard(o){
 /* ---------- amazon ---------- */
 function isAmz(o){return String(o['المصدر']||'').indexOf('أمازون')>=0}
 function vAmz(){
-  var list=(S.data.orders||[]).filter(isAmz);
-  var order=['بانتظار الإصدار','اتصدرت','اتجمعت','اتبعتت','تم الشحن','ملغي/مرتجع'];
-  var cnt=function(s){return list.filter(function(o){return o['المرحلة']===s}).length};
+  var all=(S.data.orders||[]).filter(isAmz),list=all.filter(matchQ);
+  var cnt=function(st){return all.filter(function(o){return o['المرحلة']===st}).length};
   var html='<div class="grid">'+stat(cnt('بانتظار الإصدار'),'مستنية شحن','gold')+stat(cnt('اتصدرت'),'اتصدرت ومستنية تتجمع','')+
-    stat(cnt('اتجمعت'),'اتجمعت ومستنية تتبعت','blue')+stat(cnt('اتبعتت'),'اتبعتت','ok')+'</div>';
-  list.sort(function(a,b){var x=order.indexOf(a['المرحلة'])-order.indexOf(b['المرحلة']);if(x)return x;return String(b['التاريخ']).localeCompare(String(a['التاريخ']))});
-  html+='<h2>طلبات أمازون ('+list.length+')</h2>'+(list.length?'<div class="cards">'+list.filter(function(o){return o['المرحلة']!=='اتبعتت'&&o['المرحلة']!=='تم الشحن'}).map(orderCard).join('')+'</div>'+
-    (list.some(function(o){return o['المرحلة']==='اتبعتت'||o['المرحلة']==='تم الشحن'})?'<h2>اتبعتت</h2><div class="olist">'+list.filter(function(o){return o['المرحلة']==='اتبعتت'||o['المرحلة']==='تم الشحن'}).map(orderLine).join('')+'</div>':''):'<div class="empty">مفيش طلبات أمازون</div>');
-  return html;
+    stat(cnt('اتجمعت'),'اتجمعت ومستنية تتبعت','blue')+stat(cnt('اتبعتت'),'اتبعتت','ok')+'</div>'+searchBox();
+  var act=list.filter(function(o){return DONE_ST.indexOf(o['المرحلة'])<0});
+  html+='<h2>شغالة ('+act.length+')</h2>'+(act.length?'<div class="cards">'+act.map(orderCard).join('')+'</div>':'<div class="empty">مفيش طلبات أمازون شغالة</div>');
+  return html+bundlesSection(true,list);
 }
 
 /* ---------- days ---------- */
